@@ -1,0 +1,3 @@
+NODE most_recent_0
+SQL >
+    SELECT symbol, timestamp, price FROM event_stream ORDER BY timestamp DESC LIMIT 1 BY symbol

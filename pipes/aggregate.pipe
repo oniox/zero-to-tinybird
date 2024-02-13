@@ -1,0 +1,43 @@
+NODE get_hourly_stats
+SQL >
+    SELECT
+        toStartOfHour(timestamp) AS timestamp,
+        symbol,
+        ROUND(avg(price), 2) AS price_avg,
+        min(price) as price_min,
+        max(price) as price_max
+    FROM event_stream
+    GROUP BY symbol, timestamp
+    ORDER BY timestamp DESC, symbol ASC
+
+NODE endpoint
+SQL >
+    %
+    SELECT *
+    FROM get_hourly_stats
+    WHERE
+        1 = 1
+        {% if defined(company) %}
+            AND LOWER(symbol) = LOWER(
+                {{
+                    String(
+                        company,
+                        description='String. Three-character symbol of interest. If not provided, all companies are retured. No default. ',
+                    )
+                }}
+            )
+        {% end %}
+    LIMIT
+        {{
+            Int32(
+                max_results, 10, description="The maximum number of reports to return per response."
+            )
+        }}
+
+NODE join_data
+SQL >
+    SELECT es.timestamp, ci.symbol, ci.name, es.price, ci.sector
+    FROM company_info ci
+    JOIN event_stream es ON ci.symbol = es.symbol
+    ORDER BY timestamp DESC, symbol ASC
+    LIMIT 100

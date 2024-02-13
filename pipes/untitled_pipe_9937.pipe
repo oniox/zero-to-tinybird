@@ -1,0 +1,3 @@
+NODE untitled_pipe_9937_0
+SQL >
+    SELECT symbol, timestamp, price FROM event_stream where symbol = 'ALG' Order By timestamp DESC
